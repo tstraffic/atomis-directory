@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      # The manifest gate. A malformed customers.yml fails the pull request
+      # rather than the deploy — this is the file where a typo routes one
+      # company's crews at another company's database.
+      - run: npm run validate
+      - run: npm test

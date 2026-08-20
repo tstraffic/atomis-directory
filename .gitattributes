@@ -1,0 +1,9 @@
+# Normalise to LF in the repo regardless of who checks it out.
+# ts-dashboard and sightline-dashboard disagree on this, which made a byte
+# comparison between them report 100% drift when the real figure was ~18%.
+# Not repeating that here.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
