@@ -288,6 +288,39 @@ test('POST /resolve keeps the email out of the URL', async () => {
   });
 });
 
+test('/resolve is reachable cross-origin, so the launcher can call it', async () => {
+  await withServer(async (base) => {
+    const res = await fetch(`${base}/resolve?code=ACME`, {
+      headers: { Origin: 'capacitor://localhost' },
+    });
+    assert.equal(res.headers.get('access-control-allow-origin'), '*');
+
+    const preflight = await fetch(`${base}/resolve`, {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'capacitor://localhost',
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Request-Headers': 'content-type',
+      },
+    });
+    assert.equal(preflight.status, 204);
+    assert.match(preflight.headers.get('access-control-allow-methods'), /POST/);
+    assert.match(preflight.headers.get('access-control-allow-headers'), /Content-Type/i);
+  });
+});
+
+test('the fleet endpoints are NOT reachable cross-origin', async () => {
+  await withServer(async (base) => {
+    // They authenticate with a shared secret header. A web page must never be
+    // able to read the customer list, whatever origin it claims.
+    const res = await fetch(`${base}/fleet`, {
+      headers: { Origin: 'https://evil.example', 'x-fleet-key': FLEET_KEY },
+    });
+    assert.equal(res.status, 200); // the request itself works from a client
+    assert.equal(res.headers.get('access-control-allow-origin'), null); // but no browser may read it
+  });
+});
+
 test('/health reports without authentication', async () => {
   await withServer(async (base) => {
     const body = await (await fetch(`${base}/health`)).json();

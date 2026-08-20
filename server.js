@@ -83,6 +83,29 @@ function createApp({ manifest, fleetKey, rateLimitMax } = {}) {
   app.set('trust proxy', 1); // sits behind a platform proxy
   app.disable('x-powered-by');
 
+  // The launcher calls /resolve from a different origin in every delivery mode:
+  // capacitor://localhost inside the app, a static host as a PWA, localhost in
+  // development. Without CORS the browser blocks all of it.
+  //
+  // Allowing any origin is safe here and only here: /resolve is public,
+  // unauthenticated routing data and sets no cookies, so there is no ambient
+  // authority for another site to borrow. The fleet endpoints deliberately get
+  // no CORS at all — they carry a shared secret and must never be reachable
+  // from a web page.
+  //
+  // Mounted before the rate limiter so a preflight doesn't spend a request.
+  app.use('/resolve', (req, res, next) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Access-Control-Max-Age', '86400');
+    res.set('Vary', 'Origin');
+    if (req.method === 'OPTIONS') {
+      res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      return res.status(204).end();
+    }
+    return next();
+  });
+
   // /resolve runs before login, so it cannot be authenticated. That makes it
   // an enumeration surface: rate limit it, and return an identical generic 404
   // for "no such company" and "company suspended" alike.
