@@ -1,0 +1,75 @@
+# Atomis fleet manifest — the single source of truth for who exists and where.
+#
+# Adding a customer is a pull request against this file. No app release is
+# required: the build already in the store knows how to reach anyone listed
+# here, because the only URL compiled into it is this service.
+#
+# RULES
+#   - apiBaseUrl MUST sit under the allowlisted suffix (.atomis.com.au).
+#     A URL outside it fails at boot here, and is rejected again on the device.
+#   - Company codes are routing keys, not secrets. Make them memorable — a
+#     crew member types this on a phone at 5am.
+#   - Never reuse a retired code. Pointing an old customer's code at a new
+#     customer's database is a genuinely bad day.
+#   - Feature flags name capabilities, never customers.
+#   - Keep this file under review protection. A typo here routes one company's
+#     crews at another company's data.
+
+customers:
+  - tenantId: ts
+    displayName: T&S Traffic Control
+    status: active
+    codes: [TS, TSTC]
+    emailDomains: [tstc.com.au]
+    apiBaseUrl: https://ts.atomis.com.au
+    pinnedCoreVersion: "1.0.0"
+    modules: [traffic-control]
+    branding:
+      productName: Atomis Crew
+      primaryColor: "#0F172A"
+      supportEmail: suhail@tstc.com.au
+    features:
+      swms_module: true
+      live_tracking: true
+      timesheet_export: true
+      photo_evidence: true
+
+  - tenantId: sightline
+    displayName: Sightline Traffic Engineers
+    status: active
+    codes: [SIGHTLINE]
+    # TODO: add Sightline's work email domain once confirmed, so office staff
+    # can sign in with their email instead of the code.
+    emailDomains: []
+    apiBaseUrl: https://sightline.atomis.com.au
+    pinnedCoreVersion: "1.0.0"
+    modules: [traffic-engineering]
+    branding:
+      productName: Sightline
+      primaryColor: "#3E2632"
+      supportEmail: suhail@tstc.com.au
+    features:
+      swms_module: false
+      live_tracking: false
+      timesheet_export: true
+      photo_evidence: true
+
+  # Permanent, for App Review. Reviewers get this code in the review notes and
+  # have nowhere to go without it. Never recycle this tenant.
+  - tenantId: demo
+    displayName: Atomis Demo
+    status: active
+    codes: [DEMO]
+    emailDomains: []
+    apiBaseUrl: https://demo.atomis.com.au
+    pinnedCoreVersion: "1.0.0"
+    modules: [traffic-control]
+    branding:
+      productName: Atomis
+      primaryColor: "#111827"
+      supportEmail: support@atomis.com.au
+    features:
+      swms_module: true
+      live_tracking: true
+      timesheet_export: true
+      photo_evidence: true

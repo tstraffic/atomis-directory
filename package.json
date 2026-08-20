@@ -1,0 +1,21 @@
+{
+  "name": "atomis-directory",
+  "version": "1.0.0",
+  "description": "Atomis directory service — answers which deployment a company belongs to. The one URL compiled into the app.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test",
+    "validate": "node scripts/validate-manifest.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "express-rate-limit": "^8.3.1",
+    "js-yaml": "^4.1.0"
+  },
+  "private": true
+}
