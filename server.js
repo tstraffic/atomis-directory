@@ -69,6 +69,9 @@ function publicView(customer) {
   return {
     tenantId: customer.tenantId,
     apiBaseUrl: customer.apiBaseUrl,
+    // Which apps this customer has. Each app enforces this itself, so
+    // /resolve keeps exactly one generic 404 and no second observable state.
+    apps: customer.apps,
     modules: customer.modules,
     branding: customer.branding,
     features: customer.features,
@@ -220,6 +223,7 @@ function createApp({ manifest, fleetKey, rateLimitMax } = {}) {
         tenantId: c.tenantId,
         displayName: c.displayName,
         status: c.status,
+        apps: c.apps,
         modules: c.modules,
         pinnedCoreVersion: c.pinnedCoreVersion ?? null,
         lastHeartbeat: heartbeats.get(c.tenantId) || null,

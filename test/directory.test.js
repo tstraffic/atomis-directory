@@ -253,6 +253,7 @@ test('the response never leaks fleet internals', async () => {
     const body = await (await fetch(`${base}/resolve?code=DEMO`)).json();
     assert.deepEqual(Object.keys(body).sort(), [
       'apiBaseUrl',
+      'apps',
       'branding',
       'features',
       'modules',
@@ -400,6 +401,20 @@ test('with no FLEET_KEY configured, the fleet endpoints fail closed', async () =
   );
 });
 
+test('an unknown app key is rejected, so a typo fails the deploy', () => {
+  const problems = problemsOf(() =>
+    load(doc(entry({ extra: ['    apps: [feild_station]'] })))
+  );
+  assert.match(problems, /unknown app "feild_station"/);
+});
+
+test('apps is served so each app can check its own entitlement', async () => {
+  await withServer(async (base) => {
+    const body = await (await fetch(`${base}/resolve?code=DEMO`)).json();
+    assert.deepEqual(body.apps, []);
+  });
+});
+
 test('the shipped customers.yml is valid', () => {
   const m = loadManifest({ file: path.join(__dirname, '..', 'customers.yml') });
   assert.ok(m.byTenantId.has('demo'), 'the demo tenant must exist for App Review');
@@ -407,4 +422,7 @@ test('the shipped customers.yml is valid', () => {
   for (const c of m.customers) {
     assert.match(c.apiBaseUrl, /^https:\/\/[a-z0-9-]+\.atomis\.com\.au$/);
   }
+  // Sightline is a consultancy — projects and deliverables, no crews on site.
+  assert.deepEqual(m.byTenantId.get('sightline').apps, ['control_room']);
+  assert.deepEqual(m.byTenantId.get('ts').apps, ['control_room', 'field_station']);
 });
